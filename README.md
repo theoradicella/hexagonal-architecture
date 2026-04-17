@@ -10,34 +10,21 @@ The point of this repository is the **architecture**, not the features. The code
 
 The core idea: your business logic (the **domain**) should not depend on any framework, database or external tool. Dependencies always point **inward** toward the domain. External systems are plugged in through **ports** (interfaces) and **adapters** (concrete implementations).
 
-```flowchart LR
- subgraph Driving["Driving adapters (inbound)"]
-    direction TB
-        HTTP["FastAPI routes"]
-        CLI["CLI / tests"]
-  end
- subgraph Driven["Driven adapters (outbound)"]
-    direction TB
-        DB["SQLAlchemy / MySQL"]
-        JWT["JWT token service"]
-        BCRYPT["bcrypt hasher"]
-        SMTP["SMTP notifier"]
-  end
-    HTTP --> DOMAIN{{"Domain<br><br>Entities<br>Use cases<br>Ports"}}
-    CLI --> DOMAIN
-    DOMAIN --> DB & JWT & BCRYPT & SMTP
+Picture the application as three concentric layers:
 
-     DOMAIN:::Peach
-    classDef Peach stroke-width:1px, stroke-dasharray:none, stroke:#FBB35A, fill:#FFEFDB, color:#8F632D
-    style DOMAIN stroke:#000000,color:#D50000
-```
+1. **Domain (center).** Entities, use cases and port interfaces. Pure Python — no FastAPI, no SQLAlchemy, no HTTP. This is where business rules live (for example, the order state machine).
+2. **Ports (the boundary around the domain).** Abstract interfaces that describe what the domain needs from the outside world ("give me a user by email", "hash this password", "send this email"). The domain depends only on these, never on concrete implementations.
+3. **Adapters (outer layer).** Concrete code that implements the ports or calls into the domain. They come in two flavours:
+   - **Driving adapters (inbound)** — they trigger the domain. Examples in this repo: FastAPI routes and the test suite. A user action enters through here.
+   - **Driven adapters (outbound)** — the domain tells them to do something. Examples: SQLAlchemy repositories, the bcrypt password hasher, the JWT token service, the SMTP notifier. The domain calls them through their port interface without knowing which implementation is plugged in.
 
-- **Driving adapters** call into the domain (HTTP requests, CLI commands, tests).
-- **Driven adapters** are called *by* the domain (databases, email servers, JWT libraries).
-- The domain only knows about **ports**. It never imports from `adapters/`.
-- The **composition root** (`infrastructure/dependencies.py`) is the only place allowed to wire ports to concrete adapters.
+The flow of a request looks like this: an HTTP call hits a FastAPI route (driving adapter), which invokes a use case in the domain, which in turn asks its ports for whatever it needs (data, hashing, notifications). The driven adapters on the other side fulfil those requests.
 
-This decoupling means you can swap MySQL for Postgres, bcrypt for argon2, or FastAPI for gRPC without touching a single use case.
+Two rules keep the architecture honest:
+- The domain **never imports from `adapters/`**. If it did, the dependency would point outward and the decoupling would be lost.
+- The **composition root** (`infrastructure/dependencies.py`) is the only place allowed to wire ports to concrete adapters. Everywhere else, code receives its dependencies through constructors.
+
+The payoff: you can swap MySQL for Postgres, bcrypt for argon2, or FastAPI for gRPC without touching a single use case, and you can unit-test the entire domain with in-memory stubs — no database, no network.
 
 ---
 
