@@ -1,0 +1,28 @@
+meta {
+  name: Create Vendor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/vendors
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "Widgets Inc",
+    "contact_email": "vendor@widgets.com"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

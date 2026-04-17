@@ -1,0 +1,44 @@
+[project]
+name = "order-management-api"
+version = "0.1.0"
+description = "Order management API demonstrating hexagonal architecture (ports & adapters) with FastAPI, SQLAlchemy and JWT auth."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy[asyncio]",
+    "aiomysql",
+    "pymysql",
+    "alembic",
+    "pydantic-settings",
+    "pydantic[email]",
+    "python-jose[cryptography]",
+    "bcrypt",
+]
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "ruff",
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "aiosqlite",
+    "types-python-jose",
+]
+
+[tool.mypy]
+strict = true
+files = ["."]
+exclude = ["alembic", "tests"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

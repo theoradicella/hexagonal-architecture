@@ -1,0 +1,28 @@
+meta {
+  name: List Orders
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/orders?page=1&page_size=10
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+params:query {
+  page: 1
+  page_size: 10
+  ~status_filter: PENDING
+  ~customer_id: 1
+  ~vendor_id: 1
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

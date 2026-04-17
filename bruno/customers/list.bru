@@ -1,0 +1,25 @@
+meta {
+  name: List Customers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/customers?page=1&page_size=10
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+params:query {
+  page: 1
+  page_size: 10
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

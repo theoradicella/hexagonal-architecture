@@ -1,0 +1,33 @@
+meta {
+  name: Create Order
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "customer_id": 1,
+    "vendor_id": 1,
+    "total_amount": 500
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("status starts as PENDING", function() {
+    expect(res.body.status).to.equal("PENDING");
+  });
+}
